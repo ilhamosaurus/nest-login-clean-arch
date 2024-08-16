@@ -1,0 +1,34 @@
+services:
+  mysql:
+    image: mysql:8
+    restart: unless-stopped
+    ports:
+      - 3307:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: supersecret
+      MYSQL_DATABASE: clean_arch
+      MYSQL_USER: nestapp
+      MYSQL_PASSWORD: qwerty
+    volumes:
+      - db:/var/lib/mysql
+
+  nest-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URI=mysql://nestapp:qwerty@mysql:3306/clean_arch?schema=public
+      - PORT=7979
+      - SECRET=supersecret
+    env_file:
+      - ./.env
+    depends_on:
+      - mysql
+    ports:
+      - '7979:7979'
+    volumes:
+      - ./:/app
+      - /app/node_modules
+
+volumes:
+  db:
